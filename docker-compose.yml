@@ -1,0 +1,16 @@
+services:
+  eshopdb:
+    image: postgres
+
+  webapplication1:
+    image: ${DOCKER_REGISTRY-}webapplication1
+    build:
+      context: .
+      dockerfile: WebApplication1/Dockerfile
+
+  identity:
+    image: quay.io/keycloak/keycloak:26.1.2
+
+volumes:
+  postgres_db:
+    

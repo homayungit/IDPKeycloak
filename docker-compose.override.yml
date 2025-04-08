@@ -1,0 +1,56 @@
+services:
+  eshopdb:
+    image: postgres:latest  # Added image for PostgreSQL
+    container_name: eshopdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=EShopDb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_eshopdb:/var/lib/postgresql/data/
+
+  webapplication1:
+    container_name: webapplication1
+    image: your-dotnet-image:latest
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - ASPNETCORE_HTTP_PORTS=8080
+    - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+    - "8082:8080"
+    - "8083:8081"
+    volumes:
+    - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+    - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+    - eshopdb
+
+  identity:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: identity
+    ports:
+      - "9090:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://eshopdb/EShopDb?currentSchema=identity
+
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres
+      - KC_PROXY=edge                         
+      - KC_HOSTNAME_STRICT=false              
+      - KC_HOSTNAME_STRICT_HTTPS=false        
+      - KC_HTTP_ENABLED=true                  
+      # - KC_HOSTNAME_URL=http://172.16.16.168:9090
+      - KC_HOSTNAME_URL=http://localhost:9090 
+    restart: always
+    command: ["start-dev"]
+
+volumes:
+  postgres_eshopdb:
+      
+ 
